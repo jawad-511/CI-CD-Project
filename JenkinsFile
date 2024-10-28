@@ -33,7 +33,7 @@ pipeline {
             steps {
                 echo 'Deploying application...'
                 // Deployment step - adjust to your server setup
-                sh 'scp target/*.jar user@yourserver:/path/to/deploy/' // Replace with actual server details
+                sh 'scp target/*.jar user@64.226.83.117:8080/path/to/deploy/' // Replace with actual server details
             }
         }
     }
