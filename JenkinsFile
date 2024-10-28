@@ -1,0 +1,52 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Checking out code from GitHub...'
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: '*/main']], // Ensure this is the branch you want to pull
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/Eng-Eyad77/Testing-Project.git' // Public repository URL
+                    ]]
+                ])
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Running tests...'
+                sh 'mvn clean test' // Runs the tests
+            }
+        }
+
+        stage('Package') {
+            steps {
+                echo 'Packaging application...'
+                sh 'mvn clean package' // Packages the application into a JAR or WAR file
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo 'Deploying application...'
+                // Deployment step - adjust to your server setup
+                sh 'scp target/*.jar user@yourserver:/path/to/deploy/' // Replace with actual server details
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline completed.'
+        }
+        success {
+            echo 'Pipeline succeeded!'
+        }
+        failure {
+            echo 'Pipeline failed!'
+        }
+    }
+}
