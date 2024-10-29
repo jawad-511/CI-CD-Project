@@ -44,14 +44,14 @@ pipeline {
 
         stage('Deploy Docker Container') {
             steps {
-                echo 'Deploying application in Docker container on port 8090...'
+                echo 'Deploying application in Docker container on port 8081...'
                 script {
                     sh '''
                     curl -X POST -H "Content-Type: application/json" --data '{
                         "Image": "myapp:latest",
                         "HostConfig": {
                             "PortBindings": {
-                                "8090/tcp": [{"HostPort": "8090"}]
+                                "8081/tcp": [{"HostPort": "8081"}]
                             }
                         }
                     }' http://localhost:2375/containers/create?name=myapp

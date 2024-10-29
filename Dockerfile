@@ -8,7 +8,7 @@ WORKDIR /app
 COPY target/testing_project-0.0.1-SNAPSHOT.jar app.jar
 
 # تعيين المنفذ الذي سيستمع عليه التطبيق داخل الحاوية
-EXPOSE 8080
+EXPOSE 8081
 
 # تشغيل التطبيق عند بدء الحاوية
 ENTRYPOINT ["java", "-jar", "app.jar"]
