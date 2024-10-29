@@ -12,6 +12,11 @@ public class TaskController {
     @Autowired
     private TaskService taskService;
 
+    @GetMapping("/")
+    public String redirectToTasks() {
+        return "redirect:/tasks";
+    }
+
     @GetMapping
     public String viewTasks(Model model) {
         model.addAttribute("tasks", taskService.findAll());
@@ -52,7 +57,7 @@ public class TaskController {
     @GetMapping("/set-priority/{id}")
     public String showPriorityForm(@PathVariable("id") Long id, Model model) {
         model.addAttribute("task", taskService.findById(id).orElseThrow());
-        return "set-priority"; // New view for setting priority
+        return "set-priority";
     }
 
     @PostMapping("/set-priority/{id}")
