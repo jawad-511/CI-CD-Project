@@ -1,47 +1,73 @@
-pipeline {
+`
+
+~pipeline {
     agent any
 
+    environment {
+        GITHUB_ACCESS_TOKEN = credentials('GITHUB_ACCESS_TOKEN') // ضع هنا الـ Credential ID الذي أنشأته في Jenkins
+    }
+
     stages {
-        // Checkout the code from the repository
         stage('Checkout') {
             steps {
-                git 'https://github.com/Eng-Eyad77/Testing-Project.git'
+                git url: 'https://github.com/Eng-Eyad7/Testing-Project.git', branch: 'main', credentialsId: 'GITHUB_ACCESS_TOKEN'
             }
         }
 
-        // Build the project and run the tests
         stage('Build') {
             steps {
-                sh './mvnw clean test --no-transfer-progress'
+                echo 'Building application...'
+                sh 'mvn clean install' // بناء المشروع باستخدام Maven
             }
         }
 
-        // Package the application into a Docker image
-        stage('Package Docker Image') {
+        stage('Test') {
             steps {
+                echo 'Running tests...'
+                sh 'mvn test' // تشغيل الاختبارات
+            }
+        }
+
+        stage('Package') {
+            steps {
+                echo 'Packaging application...'
+                sh 'mvn package' // إنشاء ملف JAR أو WAR
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                echo 'Building Docker image...'
                 script {
-                    sh 'docker build -t mvc-image .'
+                    sh 'docker build -t myapp:latest .' // بناء صورة Docker
                 }
             }
         }
 
-        // Deploy the Docker container
-        stage('Deploy Docker Container') {
-            steps {
+                echo 'Deploying application in Docker container on port 8081...'
                 script {
-                    sh 'docker stop spring-boot-app || true && docker rm spring-boot-app || true'
-                    sh 'docker run -d --name spring-boot-app -p 8081:8080 mvc-image'
-                }
-            }
-        }
-    }
-
-    post {
-        success {
-            echo 'Build and deployment succeeded!'
-        }
-        failure {
-            echo 'Build or deployment failed.'
-        }
-    }
-}
+                    sh '''
+                    curl -X POST -H "Content-Type: application/json" --data '{
+                        "Image": "myapp:latest",
+                        "HostConfig": {
+~                            "PortBindings": {
+~                                "8081/tcp": [{"HostPort": "8081"}]
+~                            }
+~                        }
+~                    }' http://localhost:2375/containers/create?name=myapp
+~                    curl -X POST http://localhost:2375/containers/myapp/start
+~                    '''
+~                }
+~            }
+~        }
+~    }
+~
+~    post {
+~        success {
+~            echo 'Build and deployment successful!'
+~        }
+~        failure {
+~            echo 'Build or deployment failed.'
+~        }
+~    }
+~}
