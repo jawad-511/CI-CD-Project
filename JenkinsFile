@@ -1,68 +1,36 @@
 pipeline {
     agent any
 
-    environment {
-        GITHUB_ACCESS_TOKEN = credentials('MVC_TASK') // Ensure this matches your Jenkins credential ID
-    }
-
     stages {
+        // Checkout the code from the repository
         stage('Checkout') {
             steps {
-                // سحب الكود من المستودع في GitHub
-                git url: 'https://github.com/Eng-Eyad77/Testing-Project.git', branch: 'main', credentialsId: 'MVC_TASK'
+                git 'https://github.com/Saad5400/mvc-testing.git'
             }
         }
 
+        // Build the project and run the tests
         stage('Build') {
             steps {
-                echo 'Building application...'
-                // استخدام Maven لبناء المشروع
-                sh 'mvn clean compile'
+                sh './mvnw clean test --no-transfer-progress'
             }
         }
 
-        stage('Test') {
+        // Package the application into a Docker image
+        stage('Package Docker Image') {
             steps {
-                echo 'Running tests...'
-                // استخدام Maven لتشغيل الاختبارات
-                sh 'mvn test'
-            }
-        }
-
-        stage('Package') {
-            steps {
-                echo 'Packaging application...'
-                // استخدام Maven لإنشاء ملف JAR أو WAR
-                sh 'mvn package'
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                echo 'Building Docker image...'
                 script {
-                    // بناء صورة Docker باستخدام ملف Dockerfile في المشروع
-                    sh 'docker build -t myapp:latest .'
+                    sh 'docker build -t mvc-image .'
                 }
             }
         }
 
+        // Deploy the Docker container
         stage('Deploy Docker Container') {
             steps {
-                echo 'Deploying application in Docker container on port 8081...'
                 script {
-                    sh '''
-                    # نشر الحاوية Docker وتشغيلها على المنفذ 8081
-                    curl -X POST -H "Content-Type: application/json" --data '{
-                        "Image": "myapp:latest",
-                        "HostConfig": {
-                            "PortBindings": {
-                                "8081/tcp": [{"HostPort": "8081"}]
-                            }
-                        }
-                    }' http://localhost:2375/containers/create?name=myapp
-                    curl -X POST http://localhost:2375/containers/myapp/start
-                    '''
+                    sh 'docker stop spring-boot-app || true && docker rm spring-boot-app || true'
+                    sh 'docker run -d --name spring-boot-app -p 8081:8080 mvc-image'
                 }
             }
         }
@@ -70,9 +38,33 @@ pipeline {
 
     post {
         success {
-            echo 'Build and deployment successful!'
+            script {
+                // Get the committer's name
+                def committer = sh(script: "git log -1 --pretty=format:'%an'", returnStdout: true).trim()
+
+                // Send the success email with committer's name only
+                mail to: 'bruhjawad@gmail.com',
+                     subject: "SUCCESS: Build and Deployment Succeeded",
+                     body: """Good news! The Jenkins pipeline executed successfully and your project was deployed.
+
+Committer: ${committer}
+"""
+            }
+            echo 'Build and deployment succeeded!'
         }
         failure {
+            script {
+                // Get the committer's name
+                def committer = sh(script: "git log -1 --pretty=format:'%an'", returnStdout: true).trim()
+
+                // Send the failure email with committer's name only
+                mail to: 'bruhjawad@gmail.com',
+                     subject: "FAILURE: Build or Deployment Failed",
+                     body: """Unfortunately, the Jenkins pipeline failed. Please check the console output for more details.
+
+Committer: ${committer}
+"""
+            }
             echo 'Build or deployment failed.'
         }
     }
