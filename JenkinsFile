@@ -2,21 +2,18 @@ pipeline {
     agent any
 
     stages {
-        // Checkout the code from the repository
         stage('Checkout') {
             steps {
-                git 'https://github.com/Saad5400/mvc-testing.git'
+                git branch: 'main', url: 'https://github.com/Eng-Eyad77/Testing-Project.git'
             }
         }
 
-        // Build the project and run the tests
         stage('Build') {
             steps {
-                sh './mvnw clean test --no-transfer-progress'
+                sh 'mvn clean test -DskipTests=false'
             }
         }
 
-        // Package the application into a Docker image
         stage('Package Docker Image') {
             steps {
                 script {
@@ -25,7 +22,6 @@ pipeline {
             }
         }
 
-        // Deploy the Docker container
         stage('Deploy Docker Container') {
             steps {
                 script {
@@ -39,10 +35,7 @@ pipeline {
     post {
         success {
             script {
-                // Get the committer's name
                 def committer = sh(script: "git log -1 --pretty=format:'%an'", returnStdout: true).trim()
-
-                // Send the success email with committer's name only
                 mail to: 'bruhjawad@gmail.com',
                      subject: "SUCCESS: Build and Deployment Succeeded",
                      body: """Good news! The Jenkins pipeline executed successfully and your project was deployed.
@@ -54,10 +47,7 @@ Committer: ${committer}
         }
         failure {
             script {
-                // Get the committer's name
                 def committer = sh(script: "git log -1 --pretty=format:'%an'", returnStdout: true).trim()
-
-                // Send the failure email with committer's name only
                 mail to: 'bruhjawad@gmail.com',
                      subject: "FAILURE: Build or Deployment Failed",
                      body: """Unfortunately, the Jenkins pipeline failed. Please check the console output for more details.
