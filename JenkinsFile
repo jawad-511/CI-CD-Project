@@ -1,37 +1,39 @@
-`
-
-~pipeline {
+pipeline {
     agent any
 
     environment {
-        GITHUB_ACCESS_TOKEN = credentials('GITHUB_ACCESS_TOKEN') // ضع هنا الـ Credential ID الذي أنشأته في Jenkins
+        GITHUB_ACCESS_TOKEN = credentials('MVC_TASK') // Ensure this matches your Jenkins credential ID
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/Eng-Eyad7/Testing-Project.git', branch: 'main', credentialsId: 'GITHUB_ACCESS_TOKEN'
+                // سحب الكود من المستودع في GitHub
+                git url: 'https://github.com/Eng-Eyad77/Testing-Project.git', branch: 'main', credentialsId: 'MVC_TASK'
             }
         }
 
         stage('Build') {
             steps {
                 echo 'Building application...'
-                sh 'mvn clean install' // بناء المشروع باستخدام Maven
+                // استخدام Maven لبناء المشروع
+                sh 'mvn clean compile'
             }
         }
 
         stage('Test') {
             steps {
                 echo 'Running tests...'
-                sh 'mvn test' // تشغيل الاختبارات
+                // استخدام Maven لتشغيل الاختبارات
+                sh 'mvn test'
             }
         }
 
         stage('Package') {
             steps {
                 echo 'Packaging application...'
-                sh 'mvn package' // إنشاء ملف JAR أو WAR
+                // استخدام Maven لإنشاء ملف JAR أو WAR
+                sh 'mvn package'
             }
         }
 
@@ -39,35 +41,39 @@
             steps {
                 echo 'Building Docker image...'
                 script {
-                    sh 'docker build -t myapp:latest .' // بناء صورة Docker
+                    // بناء صورة Docker باستخدام ملف Dockerfile في المشروع
+                    sh 'docker build -t myapp:latest .'
                 }
             }
         }
 
+        stage('Deploy Docker Container') {
+            steps {
                 echo 'Deploying application in Docker container on port 8081...'
                 script {
                     sh '''
+                    # نشر الحاوية Docker وتشغيلها على المنفذ 8081
                     curl -X POST -H "Content-Type: application/json" --data '{
                         "Image": "myapp:latest",
                         "HostConfig": {
-~                            "PortBindings": {
-~                                "8081/tcp": [{"HostPort": "8081"}]
-~                            }
-~                        }
-~                    }' http://localhost:2375/containers/create?name=myapp
-~                    curl -X POST http://localhost:2375/containers/myapp/start
-~                    '''
-~                }
-~            }
-~        }
-~    }
-~
-~    post {
-~        success {
-~            echo 'Build and deployment successful!'
-~        }
-~        failure {
-~            echo 'Build or deployment failed.'
-~        }
-~    }
-~}
+                            "PortBindings": {
+                                "8081/tcp": [{"HostPort": "8081"}]
+                            }
+                        }
+                    }' http://localhost:2375/containers/create?name=myapp
+                    curl -X POST http://localhost:2375/containers/myapp/start
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Build and deployment successful!'
+        }
+        failure {
+            echo 'Build or deployment failed.'
+        }
+    }
+}
