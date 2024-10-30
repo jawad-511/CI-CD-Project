@@ -8,6 +8,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
+                // سحب الكود من المستودع في GitHub
                 git url: 'https://github.com/username/repo.git', branch: 'main', credentialsId: 'GITHUB_ACCESS_TOKEN'
             }
         }
@@ -15,21 +16,24 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building application...'
-                // Add your build commands here (e.g., compile Java files)
+                // استخدام Maven لبناء المشروع
+                sh 'mvn clean compile'
             }
         }
 
         stage('Test') {
             steps {
                 echo 'Running tests...'
-                // Add your test commands here (e.g., running unit tests)
+                // استخدام Maven لتشغيل الاختبارات
+                sh 'mvn test'
             }
         }
 
         stage('Package') {
             steps {
                 echo 'Packaging application...'
-                // Add your packaging commands here (e.g., creating a JAR file)
+                // استخدام Maven لإنشاء ملف JAR أو WAR
+                sh 'mvn package'
             }
         }
 
@@ -37,6 +41,7 @@ pipeline {
             steps {
                 echo 'Building Docker image...'
                 script {
+                    // بناء صورة Docker باستخدام ملف Dockerfile في المشروع
                     sh 'docker build -t myapp:latest .'
                 }
             }
@@ -47,6 +52,7 @@ pipeline {
                 echo 'Deploying application in Docker container on port 8081...'
                 script {
                     sh '''
+                    # نشر الحاوية Docker وتشغيلها على المنفذ 8081
                     curl -X POST -H "Content-Type: application/json" --data '{
                         "Image": "myapp:latest",
                         "HostConfig": {
