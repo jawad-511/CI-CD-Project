@@ -1,6 +1,14 @@
 
 # Testing Project
 
+Team Members:
+Eyad Adnan Makkawi – 444003279 
+Enad Abdulmohsen Alharbi – 444002681 
+Turki Abdullah Alotaibi – 444002785 
+Jawad Ayman Alharbi – 444004266
+Jawad Khaled Alotaibi – 444003256
+
+
 ## Overview
 This project is a Spring Boot application that performs CRUD operations for a task management system. It is packaged using Docker and managed through a Jenkins CI/CD pipeline.
 
@@ -84,8 +92,9 @@ If you encounter issues:
 - Check the Jenkins console for pipeline logs.
 - Confirm Docker and Jenkins services are running properly on your server.
 
-## License
-This project is licensed under the MIT License.
+
 
 ## Contact
-For questions or feedback, please reach out to the project owner.
+For questions or feedback, please reach out to us on:
+Email: four.engineers2025@gmail.com
+
