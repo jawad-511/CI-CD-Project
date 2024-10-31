@@ -37,12 +37,15 @@ pipeline {
         stage('Deploy Docker Container') {
             steps {
                 script {
+                    // التأكد من إيقاف وحذف الحاوية القديمة إن وجدت
                     sh 'docker stop spring-boot-app || true && docker rm spring-boot-app || true'
-                    sh 'docker run -d --restart unless-stopped --name spring-boot-app -p 8081:8081 mvc-image'
+
+                    // تشغيل الحاوية بإعدادات جديدة مع إعادة تشغيل تلقائي
+                    sh 'docker run -d --name spring-boot-app -p 8081:8081 --restart unless-stopped mvc-image'
                 }
             }
         }
-
+    }
 
     post {
         success {
