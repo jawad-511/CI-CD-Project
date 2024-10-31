@@ -1,68 +1,44 @@
 pipeline {
     agent any
 
-    environment {
-        GITHUB_ACCESS_TOKEN = credentials('MVC_TASK') // Ensure this matches your Jenkins credential ID
-    }
-
     stages {
         stage('Checkout') {
             steps {
-                // سحب الكود من المستودع في GitHub
-                git url: 'https://github.com/Eng-Eyad77/Testing-Project.git', branch: 'main', credentialsId: 'MVC_TASK'
+                git branch: 'main', url: 'https://github.com/Eng-Eyad77/Testing-Project.git'
             }
         }
 
         stage('Build') {
             steps {
-                echo 'Building application...'
-                // استخدام Maven لبناء المشروع
                 sh 'mvn clean compile'
             }
         }
 
         stage('Test') {
             steps {
-                echo 'Running tests...'
-                // استخدام Maven لتشغيل الاختبارات
                 sh 'mvn test'
             }
         }
 
         stage('Package') {
             steps {
-                echo 'Packaging application...'
-                // استخدام Maven لإنشاء ملف JAR أو WAR
-                sh 'mvn package'
+                sh 'mvn package -DskipTests=false'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                echo 'Building Docker image...'
                 script {
-                    // بناء صورة Docker باستخدام ملف Dockerfile في المشروع
-                    sh 'docker build -t myapp:latest .'
+                    sh 'docker build -t mvc-image .'
                 }
             }
         }
 
         stage('Deploy Docker Container') {
             steps {
-                echo 'Deploying application in Docker container on port 8081...'
                 script {
-                    sh '''
-                    # نشر الحاوية Docker وتشغيلها على المنفذ 8081
-                    curl -X POST -H "Content-Type: application/json" --data '{
-                        "Image": "myapp:latest",
-                        "HostConfig": {
-                            "PortBindings": {
-                                "8081/tcp": [{"HostPort": "8081"}]
-                            }
-                        }
-                    }' http://localhost:2375/containers/create?name=myapp
-                    curl -X POST http://localhost:2375/containers/myapp/start
-                    '''
+                    sh 'docker stop spring-boot-app || true && docker rm spring-boot-app || true'
+                    sh 'docker run -d --name spring-boot-app -p 8081:8080 mvc-image'
                 }
             }
         }
@@ -70,10 +46,10 @@ pipeline {
 
     post {
         success {
-            echo 'Build and deployment successful!'
+            echo 'Pipeline succeeded!'
         }
         failure {
-            echo 'Build or deployment failed.'
+            echo 'Pipeline failed!'
         }
     }
 }
