@@ -37,10 +37,7 @@ pipeline {
         stage('Deploy Docker Container') {
             steps {
                 script {
-                   
                     sh 'docker stop spring-boot-app || true && docker rm spring-boot-app || true'
-
-                
                     sh 'docker run -d --name spring-boot-app -p 8081:8081 --restart unless-stopped mvc-image'
                 }
             }
@@ -50,9 +47,15 @@ pipeline {
     post {
         success {
             echo 'Pipeline succeeded!'
+            mail to: 'four.engineers2025@gmail.com',
+                 subject: "Jenkins Pipeline Success",
+                 body: "The pipeline for project Testing-Project has succeeded."
         }
         failure {
             echo 'Pipeline failed!'
+            mail to: 'four.engineers2025@gmail.com',
+                 subject: "Jenkins Pipeline Failure",
+                 body: "The pipeline for project Testing-Project has failed. Please check the Jenkins console for details."
         }
     }
 }
