@@ -9,8 +9,6 @@ Enad Abdulmohsen Alharbi – 444002681
 
 Turki Abdullah Alotaibi – 444002785 
 
-Jawad Ayman Alharbi – 444004266
-
 Jawad Khaled Alotaibi – 444003256
 
 
